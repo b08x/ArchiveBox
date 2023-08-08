@@ -71,6 +71,8 @@ services:
            - 1491
        environment:
            - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
+           - PUID=1000                       # set to your host user's UID & GID if you encounter permissions issues
+           - PGID=1000
        volumes:
            - ./sonic.cfg:/etc/sonic.cfg:ro
            - ./data/sonic:/var/lib/sonic/store
@@ -92,6 +94,8 @@ services:
         - 67/udp
       environment:
         - WEBPASSWORD=adminpassword
+        - PUID=1000                       # set to your host user's UID & GID if you encounter permissions issues
+        - PGID=1000
       volumes:
         - ./etc/pihole:/etc/pihole
         - ./etc/dnsmasq:/etc/dnsmasq.d
