@@ -1,5 +1,4 @@
 # Usage:
-#     docker compose run archivebox init --setup
 #     docker compose up
 #     echo "https://example.com" | docker compose run archivebox archivebox add
 #     docker compose run archivebox add --depth=1 https://example.com/some/feed.rss
@@ -89,9 +88,6 @@ services:
       container_name: pihole
       ports:
         - 8090:80       # uncomment to access the admin HTTP interface on http://localhost:8090
-        - 53/tcp
-        - 53/udp
-        - 67/udp
       environment:
         - WEBPASSWORD=adminpassword
         - PUID=1000                       # set to your host user's UID & GID if you encounter permissions issues
