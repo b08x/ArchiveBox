@@ -43,7 +43,7 @@ ENV CODE_DIR=/app \
 
 # Create non-privileged user for archivebox and chrome
 RUN groupadd --system $ARCHIVEBOX_USER \
-    && useradd --system --create-home --gid $ARCHIVEBOX_USER --groups audio,video $ARCHIVEBOX_USER
+    && useradd --system --create-home -s /bin/bash --gid $ARCHIVEBOX_USER --groups audio,video $ARCHIVEBOX_USER
 
 # Install system dependencies
 RUN apt-get update -qq \
@@ -55,7 +55,7 @@ RUN apt-get update -qq \
 # Install apt dependencies
 RUN apt-get update -qq \
     && apt-get install -qq -y --no-install-recommends \
-        wget curl chromium git ffmpeg youtube-dl ripgrep \
+        wget curl chromium git ffmpeg youtube-dl ripgrep iproute2 neovim nano chromium-sandbox \
         fontconfig fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-symbola fonts-noto fonts-freefont-ttf \
     && ln -s /usr/bin/chromium /usr/bin/chromium-browser \
     && rm -rf /var/lib/apt/lists/*
@@ -69,13 +69,17 @@ RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
     # && npm install -g npm \
     && rm -rf /var/lib/apt/lists/*
 
+RUN wget -O /tmp/ripgrep_all-v1.0.0.tar.gz 'https://github.com/phiresky/ripgrep-all/releases/download/v1.0.0-alpha.5/ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl.tar.gz' && \
+    tar -xvf /tmp/ripgrep_all-v1.0.0.tar.gz && \
+    mv ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga-preproc /usr/bin/
+
 # Install Node dependencies
 WORKDIR "$NODE_DIR"
 ENV PATH="${PATH}:$NODE_DIR/node_modules/.bin" \
     npm_config_loglevel=error
 ADD ./package.json ./package.json
 ADD ./package-lock.json ./package-lock.json
-RUN npm ci
+RUN npm ci --global-style
 
 # Install Python dependencies
 WORKDIR "$CODE_DIR"
@@ -121,7 +125,10 @@ ENV IN_DOCKER=True \
     READABILITY_BINARY="$NODE_DIR/node_modules/.bin/readability-extractor" \
     USE_MERCURY=True \
     MERCURY_BINARY="$NODE_DIR/node_modules/.bin/mercury-parser" \
-    YOUTUBEDL_BINARY="yt-dlp"
+    YOUTUBEDL_BINARY="yt-dlp" \
+    RIPGREP_BINARY="rga"
+
+RUN echo "PATH=/data/node_modules/.bin:$PATH" >> /home/$ARCHIVEBOX_USER/.profile
 
 # Print version for nice docker finish summary
 # RUN archivebox version

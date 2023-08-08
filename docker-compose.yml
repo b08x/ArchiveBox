@@ -12,31 +12,45 @@ version: '3.9'
 
 services:
     archivebox:
-        image: ${DOCKER_IMAGE:-archivebox/archivebox:dev}
+      #        image: ${DOCKER_IMAGE:-archivebox/archivebox:dev}
         command: server --quick-init 0.0.0.0:8000
         ports:
             - 8000:8000
         volumes:
             - ./data:/data
             # - ./etc/crontabs:/var/spool/cron/crontabs  # uncomment this and archivebox_scheduler below to set up automatic recurring archive jobs
-            # - ./archivebox:/app/archivebox             # uncomment this to mount the ArchiveBox source code at runtime (for developers working on archivebox)
-        # build: .                                       # uncomment this to build the image from source code at buildtime (for developers working on archivebox)
-        # dns:                                           # uncomment this and pihole container below for ad-blocking during archiving
-            # - pihole
+            - ./archivebox:/app/archivebox             # uncomment this to mount the ArchiveBox source code at runtime (for developers working on archivebox)
+        build: .                                       # uncomment this to build the image from source code at buildtime (for developers working on archivebox)
+        dns:                                           # uncomment this and pihole container below for ad-blocking during archiving
+            - 10.5.0.2
         environment:
+            - PUID=1000                       # set to your host user's UID & GID if you encounter permissions issues
+            - PGID=1000
+            - SEARCH_BACKEND_ENGINE=sonic     # uncomment these and sonic container below for better full-text search
+            - SEARCH_BACKEND_HOST_NAME=sonic
+            - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
             - ALLOWED_HOSTS=*                   # restrict this to only accept incoming traffic via specific domain name
-            # - MEDIA_MAX_SIZE=750m             # increase this filesize limit to allow archiving larger audio/video files
-            # - TIMEOUT=60                      # increase this number to 120+ seconds if you see many slow downloads timing out
-            # - CHECK_SSL_VALIDITY=True         # set to False to disable strict SSL checking (allows saving URLs w/ broken certs)
-            # - SAVE_ARCHIVE_DOT_ORG=True       # set to False to disable submitting all URLs to Archive.org when archiving
-            # - PUBLIC_INDEX=True               # set to False to prevent anonymous users from viewing snapshot list
-            # - PUBLIC_SNAPSHOTS=True           # set to False to prevent anonymous users from viewing snapshot content
-            # - PUBLIC_ADD_VIEW=False           # set to True to allow anonymous users to submit new URLs to archive
-            # - PUID=1000                       # set to your host user's UID & GID if you encounter permissions issues
-            # - PGID=1000
-            # - SEARCH_BACKEND_ENGINE=sonic     # uncomment these and sonic container below for better full-text search
-            # - SEARCH_BACKEND_HOST_NAME=sonic
-            # - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
+            - CHECK_SSL_VALIDITY=True         # set to False to disable strict SSL checking (allows saving URLs w/ broken certs)
+            - CHROME_SANDBOX=False
+            - MEDIA_MAX_SIZE=1024m             # increase this filesize limit to allow archiving larger audio/video files
+            - MEDIA_TIMEOUT = 3600
+            - PUBLIC_ADD_VIEW=False           # set to True to allow anonymous users to submit new URLs to archive
+            - PUBLIC_INDEX=True               # set to False to prevent anonymous users from viewing snapshot list
+            - PUBLIC_SNAPSHOTS=True           # set to False to prevent anonymous users from viewing snapshot content
+            - RIPGREP_BINARY=rga
+            - SAVE_ARCHIVE_DOT_ORG=False     # set to False to disable submitting all URLs to Archive.org when archiving
+            - SAVE_FAVICON=False
+            - SAVE_GIT=True
+            - SAVE_MEDIA = True
+            - SAVE_SCREENSHOT=False
+            - SAVE_WARC=False
+            - SAVE_WGET=True
+            - SAVE_WGET_REQUISITES = True
+            - TIMEOUT=3600                      # increase this number to 120+ seconds if you see many slow downloads timing out
+            - URL_BLACKLIST = http(s)?:\/\/(.+)?(pornhub\.com)|(redgifs\.com)\/.*
+        networks:
+          network:
+            ipv4_address: 10.5.0.3
             # ...
             # add further configuration options from archivebox/config.py as needed (to apply them only to this container)
             # or set using `docker compose run archivebox config --set SOME_KEY=someval` (to persist config across all containers)
@@ -49,30 +63,45 @@ services:
     # After starting, backfill any existing Snapshots into the full-text index:
     #   $ docker-compose run archivebox update --index-only
 
-    # sonic:
-    #    image: valeriansaliou/sonic:latest
-    #    expose:
-    #        - 1491
-    #    environment:
-    #        - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
-    #    volumes:
-    #        - ./sonic.cfg:/etc/sonic.cfg:ro
-    #        - ./data/sonic:/var/lib/sonic/store
-    
-    
+    sonic:
+       image: valeriansaliou/sonic:latest
+       container_name: sonic
+       expose:
+           - 1491
+       environment:
+           - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
+       volumes:
+           - ./sonic.cfg:/etc/sonic.cfg:ro
+           - ./data/sonic:/var/lib/sonic/store
+       networks:
+         network:
+           ipv4_address: 10.5.0.5
+
+
     ### Example: To run pihole in order to block ad/tracker requests during archiving,
     # uncomment this block and set up pihole using its admin interface
 
-    # pihole:
-    #   image: pihole/pihole:latest
-    #   ports:
-    #     - 8090:80       # uncomment to access the admin HTTP interface on http://localhost:8090
-    #   environment:
-    #     - WEBPASSWORD=SET_THIS_TO_SOME_SECRET_PASSWORD_FOR_ADMIN_DASHBOARD
-    #   volumes:
-    #     - ./etc/pihole:/etc/pihole
-    #     - ./etc/dnsmasq:/etc/dnsmasq.d
+    pihole:
+      image: pihole/pihole:latest
+      container_name: pihole
+      ports:
+        - 8090:80       # uncomment to access the admin HTTP interface on http://localhost:8090
+      environment:
+        - WEBPASSWORD=adminpassword
+      volumes:
+        - ./etc/pihole:/etc/pihole
+        - ./etc/dnsmasq:/etc/dnsmasq.d
+      networks:
+        network:
+          ipv4_address: 10.5.0.2
 
+networks:
+  network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
 
     ### Example: Enable ability to run regularly scheduled archiving tasks by uncommenting this container
     #   $ docker compose run archivebox schedule --every=day --depth=1 'https://example.com/some/rss/feed.xml'
