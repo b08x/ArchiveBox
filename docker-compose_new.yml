@@ -2,34 +2,21 @@ version: '3.9'
 
 services:
     sonic:
-       image: valeriansaliou/sonic:latest
+       image: 'valeriansaliou/sonic:latest'
        container_name: sonic
-       ports:
-           - "1491:1491"
+       exposes:
+           - 1491
        environment:
            - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
            - PUID=1000
            - PGID=1000
        volumes:
-           - ./sonic.cfg:/etc/sonic.cfg:ro
-           - ./data/sonic:/var/lib/sonic/store
-    pihole:
-      image: pihole/pihole:latest
-      container_name: pihole
-      ports:
-        - "8090:80"
-      environment:
-        - WEBPASSWORD=adminpassword
-        - PUID=1000
-        - PGID=1000
-      volumes:
-        - ./etc/pihole:/etc/pihole
-        - ./etc/dnsmasq:/etc/dnsmasq.d
+           - './sonic.cfg:/etc/sonic.cfg:ro'
+           - './data/sonic:/var/lib/sonic/store'
     archivebox:
         build: .
         container_name: archivebox
-        depends_on:
-          - sonic
+        links:
           - pihole
         cap_add:
           - ALL
@@ -61,8 +48,54 @@ services:
             - TIMEOUT=600
             - URL_BLACKLIST = http(s)?:\/\/(.+)?(pornhub\.com)|(redgifs\.com)\/.*
         volumes:
-            - ./data:/data
-            - ./archivebox:/app/archivebox
+            - './data:/data'
+            - './archivebox:/app/archivebox'
         dns:
-            - pihole            
+            - pihole
         command: server --quick-init 0.0.0.0:8000
+    pihole:
+      image: 'pihole/pihole:latest'
+      container_name: pihole
+      ports:
+        - "8090:80"
+      exposes:
+        - 53/udp
+        - 53/tcp
+      environment:
+        - WEBPASSWORD=adminpassword
+        - TZ=America/New_York
+        - DNSSEC=True
+        - PUID=1000
+        - PGID=1000
+        - VIRTUAL_HOST=pihole
+    pihole:
+      image: 'pihole/pihole:latest'
+      container_name: pihole
+      ports:
+        - "8090:80"
+      exposes:
+        - 53/udp
+        - 53/tcp
+      environment:
+        - WEBPASSWORD=adminpassword
+        - TZ=America/New_York
+        - DNSSEC=True
+        - PUID=1000
+        - PGID=1000
+        - VIRTUAL_HOST=pihole
+      volumes:
+        - './etc/pihole:/etc/pihole'
+        - './etc/dnsmasq:/etc/dnsmasq.d'
+        - './var-log/pihole.log:/var/log/pihole.log'          
+      cap_add:
+        - NET_ADMIN
+    dns:
+      - 127.0.0.1
+      - 8.8.8.8
+      - 4.4.4.4
+      volumes:
+        - './etc/pihole:/etc/pihole'
+        - './etc/dnsmasq:/etc/dnsmasq.d'
+        - './var-log/pihole.log:/var/log/pihole.log'          
+      cap_add:
+        - NET_ADMIN
