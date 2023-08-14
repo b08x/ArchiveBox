@@ -1,76 +1,76 @@
 version: '3.9'
-
 services:
   archivebox:
     container_name: archivebox
-      command: server --quick-init 0.0.0.0:8000
-      cap_add:
-          - ALL
-      ports:
-          - "8000:8000"
-      volumes:
-          - './data:/data'
-          - './archivebox:/app/archivebox'
-      build: .
-      dns:
-        - pihole
-      environment:
-        - PUID=1000
-        - PGID=1000
-        - SEARCH_BACKEND_ENGINE=sonic
-        - SEARCH_BACKEND_HOST_NAME=sonic
-        - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
-        - ALLOWED_HOSTS=*
-        - CHECK_SSL_VALIDITY=True
-        - MEDIA_MAX_SIZE=1024m
-        - CHROME_SANDBOX=True
-        - MEDIA_TIMEOUT = 3600
-        - PUBLIC_ADD_VIEW=False
-        - PUBLIC_INDEX=True
-        - PUBLIC_SNAPSHOTS=True
-        - RIPGREP_BINARY=rga
-        - SAVE_ARCHIVE_DOT_ORG=False
-        - SAVE_FAVICON=False
-        - SAVE_GIT=True
-        - SAVE_MEDIA = True
-        - SAVE_SCREENSHOT=False
-        - SAVE_WARC=False
-        - SAVE_WGET=True
-        - SAVE_WGET_REQUISITES = True
-        - TIMEOUT=600
-        - URL_BLACKLIST = http(s)?:\/\/(.+)?(pornhub\.com)|(redgifs\.com)\/.*
-      links:
-        - pihole
-    sonic:
-      image: 'valeriansaliou/sonic:latest'
-      container_name: sonic
-      exposes:
-        - 1491
-      environment:
-        - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
-        - PUID=1000
-        - PGID=1000
-      volumes:
-        - './sonic.cfg:/etc/sonic.cfg:ro'
-        - './data/sonic:/var/lib/sonic/store'
-    pihole:
-      image: 'pihole/pihole:latest'
-      container_name: pihole
-      ports:
-        - "8090:80"
-      environment:
-        - WEBPASSWORD=adminpassword
-        - TZ=America/New_York
-        - DNSSEC=True
-        - PUID=1000
-        - PGID=1000
-      volumes:
-        - './etc/pihole:/etc/pihole'
-        - './etc/dnsmasq:/etc/dnsmasq.d'
-        - './var-log/pihole.log:/var/log/pihole.log'
-      cap_add:
-        - NET_ADMIN
-      dns:
-        - 127.0.0.1
-        - 8.8.8.8
-        - 4.4.4.4
+    build: .
+    # image: ${DOCKER_IMAGE:-archivebox/archivebox:dev}
+    command: server --quick-init 0.0.0.0:8000
+    cap_add:
+      - ALL
+    ports:
+        - "8000:8000"
+    volumes:
+        - './data:/data'
+        - './archivebox:/app/archivebox'
+    dns:
+      - pihole
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - SEARCH_BACKEND_ENGINE=sonic
+      - SEARCH_BACKEND_HOST_NAME=sonic
+      - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
+      - ALLOWED_HOSTS=*
+      - CHECK_SSL_VALIDITY=True
+      - MEDIA_MAX_SIZE=1024m
+      - CHROME_SANDBOX=True
+      - MEDIA_TIMEOUT = 3600
+      - PUBLIC_ADD_VIEW=False
+      - PUBLIC_INDEX=True
+      - PUBLIC_SNAPSHOTS=True
+      - RIPGREP_BINARY=rga
+      - SAVE_ARCHIVE_DOT_ORG=False
+      - SAVE_FAVICON=False
+      - SAVE_GIT=True
+      - SAVE_MEDIA = True
+      - SAVE_SCREENSHOT=False
+      - SAVE_WARC=False
+      - SAVE_WGET=True
+      - SAVE_WGET_REQUISITES = True
+      - TIMEOUT=600
+      - URL_BLACKLIST = http(s)?:\/\/(.+)?(pornhub\.com)|(redgifs\.com)\/.*
+    links:
+      - pihole
+  sonic:
+    image: 'valeriansaliou/sonic:latest'
+    container_name: sonic
+    exposes:
+      - 1491
+    environment:
+      - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - './sonic.cfg:/etc/sonic.cfg:ro'
+      - './data/sonic:/var/lib/sonic/store'
+  pihole:
+    image: 'pihole/pihole:latest'
+    container_name: pihole
+    ports:
+      - "8090:80"
+    environment:
+      - WEBPASSWORD=adminpassword
+      - TZ=America/New_York
+      - DNSSEC=True
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - './etc/pihole:/etc/pihole'
+      - './etc/dnsmasq:/etc/dnsmasq.d'
+      - './var-log/pihole.log:/var/log/pihole.log'
+    cap_add:
+      - NET_ADMIN
+    dns:
+      - 127.0.0.1
+      - 8.8.8.8
+      - 4.4.4.4

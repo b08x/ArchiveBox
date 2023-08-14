@@ -3,7 +3,7 @@
 # Usage:
 #     git submodule update --init --recursive
 #     git pull --recurse-submodules
-#     docker build . -t archivebox --no-cache
+#     docker build . -t archivebox:local --no-cache
 #     docker run -v "$PWD/data":/data archivebox init
 #     docker run -v "$PWD/data":/data archivebox add 'https://example.com'
 #     docker run -v "$PWD/data":/data -it archivebox manage createsuperuser
@@ -49,18 +49,37 @@ RUN groupadd --system $ARCHIVEBOX_USER \
 RUN apt-get update -qq \
     && apt-get install -qq -y --no-install-recommends \
         apt-transport-https ca-certificates gnupg2 zlib1g-dev \
-        dumb-init gosu cron unzip curl \
+        dumb-init gosu cron unzip curl git wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Install apt dependencies
 RUN apt-get update -qq \
     && apt-get install -qq -y --no-install-recommends \
-        wget chromium git ffmpeg ripgrep iproute2 nano chromium-sandbox \
-        fontconfig fonts-ipafont-gothic fonts-wqy-zenhei \
-        fonts-thai-tlwg fonts-kacst fonts-symbola fonts-noto fonts-freefont-ttf
+        chromium chromium-sandbox \
     && ln -s /usr/bin/chromium /usr/bin/chromium-browser \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
+
+
+# Install apt dependencies
+RUN apt-get update -qq \
+    && apt-get install -qq -y --no-install-recommends \
+        ffmpeg ripgrep iproute2 nano \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install apt dependencies
+RUN apt-get update -qq \
+    && apt-get install -qq -y --no-install-recommends \
+        fontconfig fonts-ipafont-gothic fonts-wqy-zenhei \
+        fonts-thai-tlwg fonts-kacst fonts-symbola fonts-noto fonts-freefont-ttf \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget -O /tmp/ripgrep_all-v1.0.0.tar.gz 'https://github.com/phiresky/ripgrep-all/releases/download/v1.0.0-alpha.5/ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl.tar.gz' && \
+    tar -xvf /tmp/ripgrep_all-v1.0.0.tar.gz && \
+    mv ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga-preproc /usr/bin/ && \
+    rm -rf /tmp/ripgrep_all-*
 
 # Install Node environment
 RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
@@ -70,11 +89,6 @@ RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
         nodejs \
     # && npm install -g npm \
     && rm -rf /var/lib/apt/lists/*
-
-RUN wget -O /tmp/ripgrep_all-v1.0.0.tar.gz 'https://github.com/phiresky/ripgrep-all/releases/download/v1.0.0-alpha.5/ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl.tar.gz' && \
-    tar -xvf /tmp/ripgrep_all-v1.0.0.tar.gz && \
-    mv ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga-preproc /usr/bin/ && \
-    rm -rf /tmp/ripgrep_all-*
 
 # Install Node dependencies
 WORKDIR "$NODE_DIR"
@@ -87,11 +101,14 @@ RUN npm ci --global-style
 # Install Python dependencies
 WORKDIR "$CODE_DIR"
 ENV PATH="${PATH}:$VENV_PATH/bin"
+
 RUN python -m venv --clear --symlinks "$VENV_PATH" \
     && pip install --upgrade --quiet pip setuptools \
     && mkdir -p "$CODE_DIR/archivebox"
+
 ADD "./setup.py" "$CODE_DIR/"
 ADD "./package.json" "$CODE_DIR/archivebox/"
+
 RUN apt-get update -qq \
     && apt-get install -qq -y --no-install-recommends \
         build-essential python-dev python3-dev \
