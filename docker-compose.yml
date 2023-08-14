@@ -23,6 +23,9 @@ services:
           - 127.0.0.1
           - 8.8.8.8
           - 4.4.4.4
+       networks:
+         network:
+           ipv4_address: 10.5.0.2
     archivebox:
         container_name: archivebox
         image: ${DOCKER_IMAGE:-archivebox-archivebox:latest}
@@ -36,7 +39,7 @@ services:
             - ./archivebox:/app/archivebox
         # build: .
         dns:
-            - pihole
+            - 10.5.0.2
         environment:
             - PUID=1000
             - PGID=1000
@@ -62,10 +65,9 @@ services:
             - SAVE_WGET_REQUISITES = True
             - TIMEOUT=600
             - URL_BLACKLIST = http(s)?:\/\/(.+)?(pornhub\.com)|(redgifs\.com)\/.*
-        links:
-            - pihole
-        depends_on:
-            - pihole
+        networks:
+          network:
+            ipv4_address: 10.5.0.3
     sonic:
        image: valeriansaliou/sonic:latest
        container_name: sonic
@@ -78,3 +80,14 @@ services:
        volumes:
            - ./sonic.cfg:/etc/sonic.cfg:ro
            - ./data/sonic:/var/lib/sonic/store
+       networks:
+         network:
+           ipv4_address: 10.5.0.5
+
+networks:
+  network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
