@@ -29,3 +29,4 @@ output/
 *.sw?
 etc/
 var-log/
+diff
