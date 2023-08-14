@@ -55,15 +55,6 @@ RUN apt-get update -qq \
 # Install apt dependencies
 RUN apt-get update -qq \
     && apt-get install -qq -y --no-install-recommends \
-        chromium chromium-sandbox \
-    && ln -s /usr/bin/chromium /usr/bin/chromium-browser \
-    && apt-get autoremove -y \
-    && rm -rf /var/lib/apt/lists/*
-
-
-# Install apt dependencies
-RUN apt-get update -qq \
-    && apt-get install -qq -y --no-install-recommends \
         ffmpeg ripgrep iproute2 nano \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
@@ -80,6 +71,12 @@ RUN wget -O /tmp/ripgrep_all-v1.0.0.tar.gz 'https://github.com/phiresky/ripgrep-
     tar -xvf /tmp/ripgrep_all-v1.0.0.tar.gz && \
     mv ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga-preproc /usr/bin/ && \
     rm -rf /tmp/ripgrep_all-*
+
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
+    && apt-get update -qq \
+    && apt-get install -qq -y --no-install-recommends google-chrome-beta \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Node environment
 RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
@@ -138,8 +135,8 @@ RUN chown -R root:root . && chmod a+rX -R . && pip install -e .
 WORKDIR "$DATA_DIR"
 #ADD ./ArchiveBox.conf ./ArchiveBox.conf
 ENV IN_DOCKER=True \
-    CHROME_SANDBOX=True \
-    CHROME_BINARY="/usr/bin/chromium-browser" \
+    CHROME_SANDBOX=False \
+    CHROME_BINARY="google-chrome-beta" \
     USE_SINGLEFILE=True \
     SINGLEFILE_BINARY="$NODE_DIR/node_modules/.bin/single-file" \
     USE_READABILITY=True \
@@ -149,7 +146,8 @@ ENV IN_DOCKER=True \
     YOUTUBEDL_BINARY="yt-dlp" \
     RIPGREP_BINARY="rga"
 
-RUN echo "PATH=/data/node_modules/.bin:$PATH" >> /home/$ARCHIVEBOX_USER/.profile
+RUN echo "PATH=/data/node_modules/.bin:$PATH" >> /home/$ARCHIVEBOX_USER/.profile \
+    && mkdir -pv /home/$ARCHIVEBOX_USER/.config/Crash\ Reports/pending
 
 # Print version for nice docker finish summary
 # RUN archivebox version
