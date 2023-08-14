@@ -55,9 +55,11 @@ RUN apt-get update -qq \
 # Install apt dependencies
 RUN apt-get update -qq \
     && apt-get install -qq -y --no-install-recommends \
-        wget curl chromium git ffmpeg youtube-dl ripgrep iproute2 neovim nano chromium-sandbox \
-        fontconfig fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-symbola fonts-noto fonts-freefont-ttf \
+        wget chromium git ffmpeg ripgrep iproute2 nano chromium-sandbox \
+        fontconfig fonts-ipafont-gothic fonts-wqy-zenhei \
+        fonts-thai-tlwg fonts-kacst fonts-symbola fonts-noto fonts-freefont-ttf
     && ln -s /usr/bin/chromium /usr/bin/chromium-browser \
+    && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node environment
@@ -71,7 +73,8 @@ RUN curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
 
 RUN wget -O /tmp/ripgrep_all-v1.0.0.tar.gz 'https://github.com/phiresky/ripgrep-all/releases/download/v1.0.0-alpha.5/ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl.tar.gz' && \
     tar -xvf /tmp/ripgrep_all-v1.0.0.tar.gz && \
-    mv ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga-preproc /usr/bin/
+    mv ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga ripgrep_all-v1.0.0-alpha.5-x86_64-unknown-linux-musl/rga-preproc /usr/bin/ && \
+    rm -rf /tmp/ripgrep_all-*
 
 # Install Node dependencies
 WORKDIR "$NODE_DIR"
@@ -118,7 +121,7 @@ RUN chown -R root:root . && chmod a+rX -R . && pip install -e .
 WORKDIR "$DATA_DIR"
 #ADD ./ArchiveBox.conf ./ArchiveBox.conf
 ENV IN_DOCKER=True \
-    CHROME_SANDBOX=False \
+    CHROME_SANDBOX=True \
     CHROME_BINARY="/usr/bin/chromium-browser" \
     USE_SINGLEFILE=True \
     SINGLEFILE_BINARY="$NODE_DIR/node_modules/.bin/single-file" \
