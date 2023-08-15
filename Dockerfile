@@ -135,7 +135,7 @@ RUN chown -R root:root . && chmod a+rX -R . && pip install -e .
 WORKDIR "$DATA_DIR"
 #ADD ./ArchiveBox.conf ./ArchiveBox.conf
 ENV IN_DOCKER=True \
-    CHROME_SANDBOX=True \
+    CHROME_SANDBOX=False \
     CHROME_BINARY="/usr/bin/google-chrome-beta" \
     USE_SINGLEFILE=True \
     SINGLEFILE_BINARY="$NODE_DIR/node_modules/.bin/single-file" \
