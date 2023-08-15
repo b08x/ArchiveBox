@@ -50,6 +50,13 @@ root@ccad4cc2b521:/data# su - archivebox
 
 archivebox@09a9a11123ae:~$ cd /data
 
+```
+
+```bash
+#!/usr/bin/env bash
+
+export USER_AGENT="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36"
+
 archivebox config --set MEDIA_TIMEOUT=3600 TIMEOUT=600 \
                         SAVE_ARCHIVE_DOT_ORG=False \
                         URL_BLACKLIST='(://(.*\.)?pornhub\.com)|(://(.*\.)?redgifs\.com)|(.*\.exe$)' \ GIT_DOMAINS=github.com,bitbucket.org,gitlab.com \
