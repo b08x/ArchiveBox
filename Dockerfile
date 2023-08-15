@@ -135,8 +135,8 @@ RUN chown -R root:root . && chmod a+rX -R . && pip install -e .
 WORKDIR "$DATA_DIR"
 #ADD ./ArchiveBox.conf ./ArchiveBox.conf
 ENV IN_DOCKER=True \
-    CHROME_SANDBOX=False \
-    CHROME_BINARY="google-chrome-beta" \
+    CHROME_SANDBOX=True \
+    CHROME_BINARY="/usr/bin/google-chrome-beta" \
     USE_SINGLEFILE=True \
     SINGLEFILE_BINARY="$NODE_DIR/node_modules/.bin/single-file" \
     USE_READABILITY=True \
@@ -146,8 +146,7 @@ ENV IN_DOCKER=True \
     YOUTUBEDL_BINARY="yt-dlp" \
     RIPGREP_BINARY="rga"
 
-RUN echo "PATH=/data/node_modules/.bin:$PATH" >> /home/$ARCHIVEBOX_USER/.profile \
-    && mkdir -pv /home/$ARCHIVEBOX_USER/.config/Crash\ Reports/pending
+RUN echo "PATH=/data/node_modules/.bin:$PATH" >> /home/$ARCHIVEBOX_USER/.profile
 
 # Print version for nice docker finish summary
 # RUN archivebox version
