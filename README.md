@@ -25,9 +25,9 @@ git checkout local
 git submodule update --init --recursive && git pull --recurse-submodules
 ```
 
-Still in the $ARCHIVEBOX directory, when build and start the containers.
+Still in the $ARCHIVEBOX directory, build and start the containers.
 
-Alternative, `build.sh` can take care of this as well.
+Alternatively, `build.sh` can take care of this as well.
 
 ```bash
 #!/usr/bin/env bash
@@ -39,7 +39,7 @@ docker build . -t archivebox:local --no-cache
 docker-compose up -d
 ```
 
-Once the containers are up
+Once the containers are up, ensure the configuration is set.
 
 ```bash
 # TODO: use docker run commands to configure and populate the index
@@ -81,28 +81,26 @@ archivebox config --set MEDIA_TIMEOUT=3600 TIMEOUT=600 \
                         CHROME_USER_AGENT = Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36
 ```
 
+Initialize the whole thing and setup your credentials.
 
 ```bash
 
 archivebox@ccad4cc2b521:/data$ archivebox init --setup
 
-# set your userid, email and password
 
 ```
 
-
 ## pihole blocklists
 
-Before adding any urls, add Adblock lists to the instance of pihole so that junk traffic filtered before snapshots are pulled.
+Before adding any urls to the archive, configure Adblock lists for the instance of pihole so that junk traffic is  filtered before snapshots are pulled.
 
-Navigate to the instance of pi-hole admin and add the blocklists
+Navigate to the instance of pi-hole admin and add the block lists.
 
-`http://hostname:8090/admin`
+You can copy the list in at once as long as they remain each separated with a space.
 
-[source: Sefinek-Blocklist-Collection](https://github.com/sefinek24/Sefinek-Blocklist-Collection)
 
 <details>
-  <summary>the list</summary>
+  <summary>block lists</summary>
 
 ```text
 https://blocklist.sefinek.net/generated/0.0.0.0/ads/blocklistproject.ads.txt
@@ -211,9 +209,16 @@ https://blocklist.sefinek.net/generated/0.0.0.0/useless-websites.txt
 ```
 </details>
 
-After that, update Gravity. When that finishes, begin the initial import.
+
+[source: Sefinek-Blocklist-Collection](https://github.com/sefinek24/Sefinek-Blocklist-Collection)
+
+
+After that, update Gravity to parse and the lists.
+
+When that finishes, begin the initial import.
 
 ```bash
+#!/usr/bin/env
 
 screen -S initial
 
