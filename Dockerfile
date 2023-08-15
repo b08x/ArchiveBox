@@ -48,7 +48,7 @@ RUN groupadd --system $ARCHIVEBOX_USER \
 # Install system dependencies
 RUN apt-get update -qq \
     && apt-get install -qq -y --no-install-recommends \
-        apt-transport-https ca-certificates gnupg2 zlib1g-dev \
+        apt-transport-https apt-utils ca-certificates gnupg2 zlib1g-dev \
         dumb-init gosu cron unzip curl git wget \
     && rm -rf /var/lib/apt/lists/*
 
@@ -116,15 +116,6 @@ RUN apt-get update -qq \
     && apt-get purge -y build-essential python-dev python3-dev \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/*
-
-# Install apt development dependencies
-# RUN apt-get install -qq \
-#     && apt-get install -qq -y --no-install-recommends \
-#         python3 python3-dev python3-pip python3-venv python3-all \
-#         dh-python debhelper devscripts dput software-properties-common \
-#         python3-distutils python3-setuptools python3-wheel python3-stdeb
-# RUN python3 -c 'from distutils.core import run_setup; result = run_setup("./setup.py", stop_after="init"); print("\n".join(result.extras_require["dev"]))' > /tmp/dev_requirements.txt \
-    # && pip install --quiet -r /tmp/dev_requirements.txt
 
 # Install ArchiveBox Python package and its dependencies
 WORKDIR "$CODE_DIR"

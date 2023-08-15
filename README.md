@@ -4,19 +4,24 @@
 
 ```bash
 sudo mkdir -pv /srv/http
-
 sudo chmod 2775 /srv/http
-
 sudo chgrp $USER /srv/http
-
+```
+```bash
 git clone --recursive git@github.com:b08x/ArchiveBox /srv/http/ArchiveBox
 
 cd /srv/http/ArchiveBox
 
+git submodule update --init --recursive
+git pull --recurse-submodules
+```
+
+```bash
+docker build . -t archivebox:local --no-cache
+
 docker-compose up -d
 ```
 
-if building the image, wait a few minutes
 
 ```bash
 docker exec -it archivebox /bin/bash
@@ -33,7 +38,9 @@ archivebox@09a9a11123ae:~$ archivebox config --set MEDIA_TIMEOUT=3600 TIMEOUT=60
 archivebox@ccad4cc2b521:/data$ archivebox init --setup
 ```
 
-# pihole blocklists
+## pihole blocklists
+
+Before adding any urls, add Adblock lists to the instance of pihole so that junk traffic filtered before snapshots are pulled.
 
 Navigate to the instance of pi-hole admin and add the blocklists
 
@@ -148,3 +155,17 @@ https://blocklist.sefinek.net/generated/0.0.0.0/useless-websites.txt
 ```
 
 After that, update Gravity. When that finishes, begin the initial import.
+
+```bash
+
+$ screen -S initial
+
+docker exec -it archivebox /bin/bash
+
+su - archivebox
+
+cd /data
+
+archivebox add bookmarks.html || archivebox update
+
+```
