@@ -1,42 +1,95 @@
 # archivebox local
 
+On the designated host, ensure directories and permissions are in order.
 
 
 ```bash
+#!/usr/bin/env bash
+
 sudo mkdir -pv /srv/http
 sudo chmod 2775 /srv/http
 sudo chgrp $USER /srv/http
 ```
+
+Clone the repository and ensure the submodules are also up to date.
+
 ```bash
-git clone --recursive git@github.com:b08x/ArchiveBox /srv/http/ArchiveBox
+#!/usr/bin/env bash
 
-cd /srv/http/ArchiveBox
+export ARCHIVEBOX="/srv/http/ArchiveBox"
 
-git submodule update --init --recursive
-git pull --recurse-submodules
+git clone --recursive git@github.com:b08x/ArchiveBox $ARCHIVEBOX && cd "$_"
+
+git checkout local
+
+git submodule update --init --recursive && git pull --recurse-submodules
 ```
 
+Still in the $ARCHIVEBOX directory, when build and start the containers.
+
+Alternative, `build.sh` can take care of this as well.
+
 ```bash
+#!/usr/bin/env bash
+
+# TODO: migrate to buildx
+
 docker build . -t archivebox:local --no-cache
 
 docker-compose up -d
 ```
 
+Once the containers are up
 
 ```bash
+# TODO: use docker run commands to configure and populate the index
+
 docker exec -it archivebox /bin/bash
 
 root@ccad4cc2b521:/data# su - archivebox
 
 archivebox@09a9a11123ae:~$ cd /data
 
-archivebox@09a9a11123ae:~$ archivebox config --set MEDIA_TIMEOUT=3600 TIMEOUT=600 SAVE_ARCHIVE_DOT_ORG=False URL_BLACKLIST='(://(.*\.)?pornhub\.com)|(://(.*\.)?redgifs\.com)|(.*\.exe$)' GIT_DOMAINS=github.com,bitbucket.org,gitlab.com PUBLIC_INDEX=True PUBLIC_SNAPSHOTS=True SAVE_TITLE=True SAVE_FAVICON=False SAVE_WGET=True SAVE_WGET_REQUISITES=True SAVE_WARC=False SAVE_PDF=True SAVE_SCREENSHOT=False SAVE_DOM=False SAVE_GIT=True SAVE_MEDIA=True SAVE_ARCHIVE_DOT_ORG=False CHROME_SANDBOX=False CHROME_BINARY=google-chrome-beta CHROME_HEADLESS=True MEDIA_MAX_SIZE=1024m CHECK_SSL_VALIDITY=True YOUTUBEDL_BINARY=yt-dlp RIPGREP_BINARY=rga USE_COLOR=True SHOW_PROGRESS=True
+archivebox config --set MEDIA_TIMEOUT=3600 TIMEOUT=600 \
+                        SAVE_ARCHIVE_DOT_ORG=False \
+                        URL_BLACKLIST='(://(.*\.)?pornhub\.com)|(://(.*\.)?redgifs\.com)|(.*\.exe$)' \ GIT_DOMAINS=github.com,bitbucket.org,gitlab.com \
+                        PUBLIC_INDEX=True \
+                        PUBLIC_SNAPSHOTS=True \
+                        SAVE_TITLE=True \
+                        SAVE_FAVICON=False \
+                        SAVE_SINGLEFILE = False \
+                        SAVE_WGET=False \
+                        SAVE_WGET_REQUISITES=False \
+                        SAVE_WARC=False \
+                        SAVE_PDF=True \
+                        SAVE_SCREENSHOT=False \
+                        SAVE_DOM=False \
+                        SAVE_GIT=True \
+                        SAVE_MEDIA=True \
+                        SAVE_ARCHIVE_DOT_ORG=False \
+                        CHROME_SANDBOX=False \
+                        CHROME_BINARY=google-chrome-beta \
+                        CHROME_HEADLESS=True \
+                        MEDIA_MAX_SIZE=1024m \
+                        CHECK_SSL_VALIDITY=True \
+                        YOUTUBEDL_BINARY=yt-dlp \
+                        RIPGREP_BINARY=rga \
+                        USE_COLOR=True \
+                        SHOW_PROGRESS=True \
+                        CURL_USER_AGENT = Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36 \
+                        WGET_USER_AGENT = Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36 \
+                        CHROME_USER_AGENT = Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36
 ```
 
 
 ```bash
+
 archivebox@ccad4cc2b521:/data$ archivebox init --setup
+
+# set your userid, email and password
+
 ```
+
 
 ## pihole blocklists
 
@@ -47,6 +100,9 @@ Navigate to the instance of pi-hole admin and add the blocklists
 `http://hostname:8090/admin`
 
 [source: Sefinek-Blocklist-Collection](https://github.com/sefinek24/Sefinek-Blocklist-Collection)
+
+<details>
+  <summary>the list</summary>
 
 ```text
 https://blocklist.sefinek.net/generated/0.0.0.0/ads/blocklistproject.ads.txt
@@ -153,12 +209,15 @@ https://blocklist.sefinek.net/generated/0.0.0.0/social/snapchat.txt
 https://blocklist.sefinek.net/generated/0.0.0.0/social/tiktok.txt
 https://blocklist.sefinek.net/generated/0.0.0.0/useless-websites.txt
 ```
+</details>
 
 After that, update Gravity. When that finishes, begin the initial import.
 
 ```bash
 
-$ screen -S initial
+screen -S initial
+
+#TODO: make these docker run commands
 
 docker exec -it archivebox /bin/bash
 
@@ -169,3 +228,25 @@ cd /data
 archivebox add bookmarks.html || archivebox update
 
 ```
+
+### obsidian user
+
+If using the obsidian plugin then you will need to create a user account in the webui.
+Once that account is created, you will then need to set the password using the cli.
+
+```bash
+
+ archivebox manage changepassword obsidian
+
+```
+
+
+## troubleshooting
+
+If you've stopped an update then resumed at some point in the future, you may encounter this:
+
+```bash
+Failed to save PDF 3438:3438:0815/014452.663997:ERROR: process_singleton_posix.cc(335) Failed to create /home/archivebox/.config/google-chrome-beta/SingletonLock: File exists (17) Run to see full output: .
+```
+
+Simply stop the update, remove the dead symlink then resume the update.

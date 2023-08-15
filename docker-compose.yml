@@ -29,7 +29,6 @@ services:
     archivebox:
         container_name: archivebox
         image: ${DOCKER_IMAGE:-archivebox:local}
-        #command: server --quick-init 0.0.0.0:8000
         cap_add:
           - ALL
         ports:
