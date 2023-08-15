@@ -57,7 +57,7 @@ archivebox config --set MEDIA_TIMEOUT=3600 TIMEOUT=600 \
                         PUBLIC_SNAPSHOTS=True \
                         SAVE_TITLE=True \
                         SAVE_FAVICON=False \
-                        SAVE_SINGLEFILE = False \
+                        SAVE_SINGLEFILE=True \
                         SAVE_WGET=False \
                         SAVE_WGET_REQUISITES=False \
                         SAVE_WARC=False \
@@ -76,9 +76,9 @@ archivebox config --set MEDIA_TIMEOUT=3600 TIMEOUT=600 \
                         RIPGREP_BINARY=rga \
                         USE_COLOR=True \
                         SHOW_PROGRESS=True \
-                        CURL_USER_AGENT = Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36 \
-                        WGET_USER_AGENT = Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36 \
-                        CHROME_USER_AGENT = Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36
+                        CURL_USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36' \
+                        WGET_USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36' \
+                        CHROME_USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36'
 ```
 
 Initialize the whole thing and setup your credentials.

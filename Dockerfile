@@ -124,7 +124,7 @@ RUN chown -R root:root . && chmod a+rX -R . && pip install -e .
 
 # Setup ArchiveBox runtime config
 WORKDIR "$DATA_DIR"
-#ADD ./ArchiveBox.conf ./ArchiveBox.conf
+
 ENV IN_DOCKER=True \
     CHROME_SANDBOX=False \
     CHROME_BINARY="/usr/bin/google-chrome-beta" \
