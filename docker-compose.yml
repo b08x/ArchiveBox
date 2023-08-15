@@ -16,7 +16,6 @@ services:
        volumes:
           - ./etc/pihole:/etc/pihole
           - ./etc/dnsmasq:/etc/dnsmasq.d
-          - ./var-log/pihole.log:/var/log/pihole.log
        cap_add:
           - NET_ADMIN
        dns:
