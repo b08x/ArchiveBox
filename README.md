@@ -32,11 +32,7 @@ Alternatively, `build.sh` can take care of this as well.
 ```bash
 #!/usr/bin/env bash
 
-# TODO: migrate to buildx
-
-docker build . -t archivebox:local --no-cache
-
-docker-compose up -d
+docker-compose up --build -d
 ```
 
 Once the containers are up, ensure the configuration is set.
@@ -55,11 +51,10 @@ archivebox@09a9a11123ae:~$ cd /data
 ```bash
 #!/usr/bin/env bash
 
-export USER_AGENT="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36"
-
 archivebox config --set MEDIA_TIMEOUT=3600 TIMEOUT=600 \
                         SAVE_ARCHIVE_DOT_ORG=False \
-                        URL_BLACKLIST='(://(.*\.)?pornhub\.com)|(://(.*\.)?redgifs\.com)|(.*\.exe$)' \ GIT_DOMAINS=github.com,bitbucket.org,gitlab.com \
+                        URL_BLACKLIST="(://(.*\.)?pornhub\.com)|(://(.*\.)?redgifs\.com)|(.*\.exe$)" \
+                        GIT_DOMAINS=github.com,bitbucket.org,gitlab.com \
                         PUBLIC_INDEX=True \
                         PUBLIC_SNAPSHOTS=True \
                         SAVE_TITLE=True \
@@ -83,9 +78,9 @@ archivebox config --set MEDIA_TIMEOUT=3600 TIMEOUT=600 \
                         RIPGREP_BINARY=rga \
                         USE_COLOR=True \
                         SHOW_PROGRESS=True \
-                        CURL_USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36' \
-                        WGET_USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36' \
-                        CHROME_USER_AGENT='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36'
+                        CURL_USER_AGENT="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36" \
+                        WGET_USER_AGENT="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36" \
+                        CHROME_USER_AGENT="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.0.0 Safari/537.36"
 ```
 
 Initialize the whole thing and setup your credentials.
