@@ -34,7 +34,7 @@ services:
         ports:
             - "8000:8000"
         volumes:
-            - ./data:/data
+            - /mnt/usb/archivebox/data:/data
             - type: bind
               source: /run/dbus/system_bus_socket
               target: /run/dbus/system_bus_socket
