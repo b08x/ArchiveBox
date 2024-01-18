@@ -1,0 +1,96 @@
+version: '3.9'
+
+services:
+    pihole:
+       image: pihole/pihole:latest
+       container_name: pihole
+       ports:
+           - "8090:80"
+       environment:
+          - WEBPASSWORD=adminpassword
+          - TZ=America/New_York
+          - DNSSEC=True
+          - PUID=1000
+          - PGID=1000
+          - VIRTUAL_HOST=pihole
+       volumes:
+          - ./etc/pihole:/etc/pihole
+          - ./etc/dnsmasq:/etc/dnsmasq.d
+       cap_add:
+          - NET_ADMIN
+       dns:
+          - 127.0.0.1
+          - 8.8.8.8
+          - 4.4.4.4
+       networks:
+         network:
+           ipv4_address: 10.5.0.2
+    archivebox:
+        container_name: archivebox
+          #image: ${DOCKER_IMAGE:-archivebox:local}
+        build: .
+        cap_add:
+          - ALL
+        ports:
+            - "8000:8000"
+        volumes:
+            - /mnt/usb/archivebox/data:/data
+            - type: bind
+              source: /run/dbus/system_bus_socket
+              target: /run/dbus/system_bus_socket
+        dns:
+            - 10.5.0.2
+        environment:
+            - TZ=America/New_York
+            - PUID=1000
+            - PGID=1000
+            - SEARCH_BACKEND_ENGINE=sonic
+            - SEARCH_BACKEND_HOST_NAME=sonic
+            - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
+            - ALLOWED_HOSTS=*
+            - CHECK_SSL_VALIDITY=True
+            - MEDIA_MAX_SIZE=1024m
+            - CHROME_SANDBOX=False
+            - CHROME_BINARY=google-chrome-beta
+            - MEDIA_TIMEOUT = 3600
+            - PUBLIC_ADD_VIEW=False
+            - PUBLIC_INDEX=True
+            - PUBLIC_SNAPSHOTS=True
+            - RIPGREP_BINARY=rga
+            - SAVE_ARCHIVE_DOT_ORG=False
+            - SAVE_FAVICON=False
+            - SAVE_GIT=True
+            - SAVE_MEDIA = True
+            - SAVE_SCREENSHOT=False
+            - SAVE_WARC=False
+            - SAVE_WGET=True
+            - SAVE_WGET_REQUISITES = True
+            - TIMEOUT=600
+            - URL_BLACKLIST = http(s)?:\/\/(.+)?(pornhub\.com)|(redgifs\.com)\/.*
+        networks:
+          network:
+            ipv4_address: 10.5.0.3
+    sonic:
+       image: valeriansaliou/sonic:latest
+       container_name: sonic
+       expose:
+           - 1491
+       environment:
+           - TZ=America/New_York
+           - SEARCH_BACKEND_PASSWORD=SomeSecretPassword
+           - PUID=1000
+           - PGID=1000
+       volumes:
+           - ./sonic.cfg:/etc/sonic.cfg:ro
+           - ./data/sonic:/var/lib/sonic/store
+       networks:
+         network:
+           ipv4_address: 10.5.0.5
+
+networks:
+  network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
